@@ -73,24 +73,54 @@ class PersonalizedRecommendationView(APIView):
         query = """
         MATCH (n)
         WHERE (n.name IN $interests OR n.title IN $interests)
-        MATCH (n)-[:ACTED_IN|DIRECTED|BELONGS_TO]-(m:Movie)
+        MATCH (n)-[r:ACTED_IN|DIRECTED|BELONGS_TO]-(m:Movie)
         WHERE NOT m.title IN $interests
+        WITH m, n, type(r) AS rel_type,
+             CASE type(r)
+               WHEN 'ACTED_IN'   THEN 'gra w'
+               WHEN 'DIRECTED'   THEN 'rezyseruje'
+               WHEN 'BELONGS_TO' THEN 'gatunek'
+               ELSE type(r)
+             END AS rel_label,
+             labels(n)[0] AS node_type
+        WITH m,
+             collect({ name: n.name, rel: rel_label, node_type: node_type }) AS connections,
+             count(n) AS score
         RETURN m.title AS title, m.year AS year, m.rating AS rating,
-               count(*) AS score, collect(DISTINCT n.name) AS reasons
+               score, connections
         ORDER BY score DESC, m.rating DESC
         LIMIT 8
         """
         results = db.query(query, {"interests": interests})
-        recommendations = [
-            {
-                "title": record["title"],
-                "year": record["year"],
-                "rating": record["rating"],
-                "score": record["score"],
-                "reasons": [r for r in record["reasons"] if r is not None]
-            }
-            for record in results
-        ]
+
+        recommendations = []
+        for record in results:
+            connections = record["connections"]
+
+            actors    = [c["name"] for c in connections if c["node_type"] == "Person" and c["rel"] == "gra w"]
+            directors = [c["name"] for c in connections if c["node_type"] == "Person" and c["rel"] == "rezyseruje"]
+            genres    = [c["name"] for c in connections if c["node_type"] == "Genre"]
+
+            reason_parts = []
+            if actors:
+                if len(actors) == 1:
+                    reason_parts.append(f"{actors[0]} gra w tym filmie")
+                else:
+                    reason_parts.append(f"{', '.join(actors[:-1])} i {actors[-1]} grają w tym filmie")
+            if directors:
+                reason_parts.append(f"reżyseruje {directors[0]}")
+            if genres:
+                reason_parts.append(f"gatunek: {', '.join(genres)}")
+
+            recommendations.append({
+                "title":       record["title"],
+                "year":        record["year"],
+                "rating":      record["rating"],
+                "score":       record["score"],
+                "reasons":     reason_parts,
+                "connections": len(connections),
+            })
+
         return Response(recommendations)
 
 
