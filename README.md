@@ -30,7 +30,6 @@
 | 4 | **Oś czasu** | Chronologiczny przegląd filmów z filtrowaniem po gatunku |
 | 5 | **Porównanie filmów** | Zapytanie grafowe ujawnia wspólnych aktorów, reżyserów, gatunki |
 | 6 | **Rekomendacje** | Algorytm grafowy na podstawie wybranych węzłów z pełnym uzasadnieniem |
-| 7 | **Ranking** | Aktorzy z największą liczbą połączeń, sortowani po liczbie filmów i ocenie |
 
 ### Stos technologiczny
 
