@@ -93,11 +93,8 @@
 | Węzły `Movie` | ~35 |
 | Węzły `Person` | ~40 |
 | Węzły `Genre` | 8 |
-| Relacje `ACTED_IN` | ~120 |
-| Relacje `DIRECTED` | ~25 |
-| Relacje `BELONGS_TO` | ~30 |
 | **Razem węzłów** | **~83** |
-| **Razem relacji** | **~175** |
+| **Razem relacji** | **~123** |
 
 ### Przykładowy fragment grafu
 
@@ -347,17 +344,11 @@ RETURN p1.name AS actor1, p2.name AS actor2, length(path) AS hops
 
 - Python 3.11+
 - Node.js 18+
-- Neo4j Desktop 5.x (lokalnie) lub Docker
+- Neo4j Desktop 5.x (lokalnie) lub Neo4j AuraDB (chmura)
 
 ### Krok 1 — Neo4j
 
-docker run \
-  --name neo4j \
-  -p 7474:7474 \
-  -p 7687:7687 \
-  -d \
-  -e NEO4J_AUTH=neo4j/haslo \
-  neo4j:latest
+docker run --name neo4j -p 7474:7474 -p 7687:7687 -d -e NEO4J_AUTH=neo4j/password123 neo4j:latest
 
 ### Krok 2 — Backend
 

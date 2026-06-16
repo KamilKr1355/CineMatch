@@ -234,20 +234,7 @@ def seed_data():
            (asteroid)-[:BELONGS_TO]->(com),(napoleon)-[:BELONGS_TO]->(dr),
            (schindler)-[:BELONGS_TO]->(dr),(cap)-[:BELONGS_TO]->(act)
 
-    CREATE (adam)-[:RATED {score: 5}]->(inc),
-           (adam)-[:RATED {score: 5}]->(int),
-           (adam)-[:RATED {score: 4}]->(iron),
-           (adam)-[:RATED {score: 5}]->(mat),
-           (ewa)-[:RATED  {score: 5}]->(barbie),
-           (ewa)-[:RATED  {score: 5}]->(once),
-           (ewa)-[:RATED  {score: 4}]->(poor),
-           (kamil)-[:RATED{score: 5}]->(dk),
-           (kamil)-[:RATED{score: 5}]->(avg),
-           (kamil)-[:RATED{score: 4}]->(dune),
-           (kamil)-[:RATED{score: 5}]->(depart),
-           (maja)-[:RATED {score: 5}]->(dune2),
-           (maja)-[:RATED {score: 4}]->(arr),
-           (maja)-[:RATED {score: 5}]->(joker)
+    
 
     // ── 11. RELACJE MIĘDZY AKTORAMI (ZNAJOMOŚCI) ────────────────────────────
     CREATE (dicaprio)-[:FRIENDS_WITH]->(pitt),
