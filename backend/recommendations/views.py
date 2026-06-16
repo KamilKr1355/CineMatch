@@ -157,9 +157,12 @@ class CommonElementsView(APIView):
         if not movie1 or not movie2:
             return Response({"error": "Podaj movie1 i movie2"}, status=400)
 
+        # Usunięto strzałki '<' i '>', dzięki czemu znajdujemy relacje w obu kierunkach
+        # (zarówno Aktor->Film, jak i Film->Gatunek)
         query = """
-        MATCH (m1:Movie {title: $m1})<-[r1]-(x)-[r2]->(m2:Movie {title: $m2})
-        RETURN x.name AS element, type(r1) AS rel1, type(r2) AS rel2,
+        MATCH (m1:Movie {title: $m1})-[r1]-(x)-[r2]-(m2:Movie {title: $m2})
+        RETURN coalesce(x.name, x.title, 'Nieznany') AS element, 
+               type(r1) AS rel1, type(r2) AS rel2,
                labels(x)[0] AS type
         """
         results = db.query(query, {"m1": movie1, "m2": movie2})
@@ -244,19 +247,23 @@ class SixDegreesQuizView(APIView):
     wraz z prawdziwą długością najkrótszej ścieżki.
     """
     def get(self, request):
+        # Losujemy 20 par różnych osób, szukamy ścieżki i zwracamy pierwszą znalezioną.
+        # Limit 20 jest buforem na wypadek, gdyby jakaś para w ogóle nie miała połączenia.
         query = """
-        MATCH (p1:Person)-[:ACTED_IN]->(:Movie)<-[:ACTED_IN]-(p2:Person)
-        WHERE p1 <> p2
+        MATCH (p1:Person), (p2:Person)
+        WHERE id(p1) < id(p2) 
         WITH p1, p2, rand() AS r
         ORDER BY r
-        LIMIT 1
+        LIMIT 20
         MATCH path = shortestPath((p1)-[*..10]-(p2))
-        WHERE ALL(x IN nodes(path) WHERE NOT x:User)
+        WHERE path IS NOT NULL AND ALL(x IN nodes(path) WHERE NOT x:User)
         RETURN p1.name AS actor1, p2.name AS actor2, length(path) AS hops
+        LIMIT 1
         """
         results = db.query(query)
         if not results:
-            return Response({"error": "Brak danych"}, status=500)
+            return Response({"error": "Brak danych lub brak połączeń"}, status=500)
+            
         r = results[0]
         return Response({
             "actor1": r["actor1"],
